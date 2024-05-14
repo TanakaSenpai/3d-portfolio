@@ -15,6 +15,14 @@ import { a } from "@react-spring/three";
 
 import islandScene from "/assets/3d/island.glb";
 
+interface Props {
+  position: number[];
+  scale: number[];
+  rotation: number[];
+  isRotating: boolean;
+  setIsRotating: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 type GLTFResult = GLTF & {
   nodes: {
     polySurface944_tree_body_0: THREE.Mesh;
@@ -30,9 +38,42 @@ type GLTFResult = GLTF & {
   };
 };
 
-const Island = (props: JSX.IntrinsicElements["group"]) => {
-  const { nodes, materials } = useGLTF(islandScene) as GLTFResult;
+const Island = (
+  props: JSX.IntrinsicElements["group"],
+  { position, scale, rotation, isRotating, setIsRotating }: Props
+) => {
   const islandRef = useRef();
+  const { gl, viewport } = useThree();
+  const { nodes, materials } = useGLTF("/assets/3d/island.glb") as GLTFResult;
+  const lastX = useRef(0);
+  const rotationSpeed = useRef(0);
+  const dampingFactor = 0.95;
+
+  const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsRotating(true);
+    if (e instanceof TouchEvent) {
+      const clientX = e.touches ? e.touches[0].clientX : e.touches
+      lastX.current = clientX;
+    }
+  };
+  const handlePointerUp = (e: MouseEvent | TouchEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsRotating(false);
+
+    if (e instanceof TouchEvent) {
+      const clientX = e.touches ? e.touches[0].clientX : e.touches;
+      
+      const delta = (clientX - lastX.clientX) / viewport.width;
+    }
+  };
+  const handlePointerMove = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
   return (
     <a.group {...props} ref={islandRef}>
       <mesh
